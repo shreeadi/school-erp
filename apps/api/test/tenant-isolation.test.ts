@@ -52,8 +52,16 @@ describe('cross-school API access', () => {
     const g = await gAdmin.get('/students?pageSize=1');
     const m = await mAdmin.get('/students?pageSize=1');
     assert.equal(g.status, 200);
-    assert.equal(g.body.total, 360);
-    assert.equal(m.body.total, 300);
+    const { PrismaService } = await import('../src/prisma/prisma.service.js');
+    const { TenantDb } = await import('../src/prisma/tenant-db.service.js');
+    const prisma = s.app.get(PrismaService);
+    const db = s.app.get(TenantDb);
+    for (const [code, res] of [['GREENWOOD', g], ['STMARYS', m]] as const) {
+      const school = await prisma.school.findUniqueOrThrow({ where: { code } });
+      const expected = await db.runFor(school.id, (tx) => tx.student.count());
+      assert.equal(res.body.total, expected, `${code} admin sees exactly their school's students`);
+    }
+    assert.notEqual(g.body.total, m.body.total);
   });
 
   it('a record id from another school is not found, read or write', async () => {
@@ -87,7 +95,8 @@ describe('record-level scoping (ABAC)', () => {
       ...me.teaching.classTeacherOf.map((x: any) => x.sectionId),
     ]);
     const list = (await teacher.get('/students?pageSize=100')).body;
-    assert.ok(list.total > 0 && list.total < 360, `teacher saw ${list.total}`);
+    const all = (await gAdmin.get('/students?pageSize=1')).body.total;
+    assert.ok(list.total > 0 && list.total < all, `teacher saw ${list.total} of ${all}`);
     for (const st of list.items) assert.ok(mySections.has(st.enrollments[0].section.id));
 
     const outside = (await gAdmin.get('/students?pageSize=100')).body.items.find(
@@ -150,7 +159,7 @@ describe('platform separation', () => {
     assert.equal(login.status, 200);
     const schools = (await platform.get('/platform/schools')).body;
     assert.ok(schools.length >= 3);
-    assert.equal(schools.find((x: any) => x.code === 'GREENWOOD').stats.students, 360);
+    assert.equal(schools.find((x: any) => x.code === 'GREENWOOD').stats.students, (await gAdmin.get('/students?pageSize=1&status=ACTIVE')).body.total);
     assert.equal((await platform.get('/students')).status, 401);
   });
 });

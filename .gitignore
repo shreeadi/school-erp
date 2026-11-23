@@ -11,3 +11,4 @@ __pycache__/
 *.pyc
 apps/api/src/generated/
 .DS_Store
+*.tsbuildinfo

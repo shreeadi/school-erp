@@ -187,17 +187,18 @@ async function seedSchool(s: SchoolSeed) {
     const accountsToCreate: { kind: 'student' | 'guardian'; id: string; email: string; fullName: string }[] = [];
     const prefix = s.code.slice(0, 4);
     for (const sec of sections) {
-      for (let r = 1; r <= s.studentsPerSection; r++) {
+      const strength = s.studentsPerSection + faker.number.int({ min: -4, max: 4 });
+      for (let r = 1; r <= strength; r++) {
         const sex = faker.helpers.arrayElement(['male', 'female'] as const);
         const lastName = faker.person.lastName();
         const birthYear = 2026 - 6 - sec.gradeNo;
         const student = await tx.student.create({
           data: {
-            schoolId, admissionNumber: `${prefix}${2016 + sec.gradeNo}/${String(admission++).padStart(4, '0')}`,
+            schoolId, admissionNumber: `${prefix}${2027 - sec.gradeNo}/${String(admission++).padStart(4, '0')}`,
             firstName: faker.person.firstName(sex), lastName, gender: sex === 'male' ? 'MALE' : 'FEMALE',
             dateOfBirth: faker.date.between({ from: `${birthYear}-04-01`, to: `${birthYear + 1}-03-31` }),
             bloodGroup: faker.helpers.arrayElement(['A+', 'B+', 'O+', 'AB+', 'A-', 'B-', 'O-']),
-            admissionDate: new Date(`${2026 - sec.gradeNo + 1}-04-0${faker.number.int({ min: 1, max: 9 })}`),
+            admissionDate: new Date(`${2027 - sec.gradeNo}-04-0${faker.number.int({ min: 1, max: 9 })}`),
             addressLine1: faker.location.streetAddress(), city: s.city, state: s.state, postalCode: faker.string.numeric(6).replace(/^0/, '6'),
           },
         });

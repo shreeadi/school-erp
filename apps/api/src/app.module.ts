@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { AiModule } from './modules/ai/ai.module.js';
 import { AccessModule } from './modules/access/access.module.js';
 import { AcademicsModule } from './modules/academics/academics.module.js';
 import { AuditModule } from './modules/audit/audit.module.js';
@@ -30,6 +31,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
     RolesModule,
     AcademicsModule,
     PeopleModule,
+    AiModule,
     JobsModule.register(),
   ],
   controllers: [HealthController],
