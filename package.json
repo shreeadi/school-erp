@@ -1,0 +1,16 @@
+{
+  "name": "school-erp",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Multi-tenant AI-powered School ERP (SaaS)",
+  "packageManager": "pnpm@10.28.0",
+  "engines": { "node": ">=22.12" },
+  "scripts": {
+    "dev:api": "pnpm --filter @school-erp/api dev",
+    "dev:web": "pnpm --filter @school-erp/web dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "db:migrate": "pnpm --filter @school-erp/api db:migrate",
+    "db:seed": "pnpm --filter @school-erp/api db:seed"
+  }
+}
