@@ -1,0 +1,48 @@
+{
+  "name": "@school-erp/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "prisma generate && tsc -p tsconfig.build.json",
+    "dev": "prisma generate && tsc -p tsconfig.build.json --watch --preserveWatchOutput & node --env-file-if-exists=.env --watch-path=dist --enable-source-maps dist/src/main.js",
+    "start": "node --env-file-if-exists=.env --enable-source-maps dist/src/main.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsc -p tsconfig.json && node --env-file-if-exists=.env --test --test-concurrency=1 --enable-source-maps 'dist/test/**/*.test.js'",
+    "db:generate": "prisma generate",
+    "db:migrate": "node --env-file-if-exists=.env node_modules/prisma/build/index.js migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:seed": "node --env-file-if-exists=.env --enable-source-maps dist/prisma/seed.js",
+    "db:reset": "node --env-file-if-exists=.env node_modules/prisma/build/index.js migrate reset --force"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^10.6.0",
+    "@nestjs/bullmq": "^12.0.2",
+    "@nestjs/common": "^12.6.0",
+    "@nestjs/config": "^12.1.1",
+    "@nestjs/core": "^12.6.0",
+    "@nestjs/platform-express": "^12.6.0",
+    "@nestjs/swagger": "^12.1.2",
+    "@nestjs/throttler": "^6.8.0",
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "argon2": "^0.45.2",
+    "bullmq": "^6.7.8",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
+    "cookie-parser": "^1.4.7",
+    "helmet": "^8.3.0",
+    "ioredis": "^6.0.0",
+    "pg": "^8.23.1",
+    "prisma": "7.10.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.6",
+    "@types/pg": "^8.23.1",
+    "typescript": "^5.9.3"
+  }
+}

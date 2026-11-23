@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: erp_owner
+          POSTGRES_PASSWORD: erp_owner_dev_password
+          POSTGRES_DB: school_erp
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U erp_owner -d school_erp" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DATABASE_URL: postgresql://erp_app:erp_app_dev_password@localhost:5432/school_erp
+      MIGRATION_DATABASE_URL: postgresql://erp_owner:erp_owner_dev_password@localhost:5432/school_erp
+      AI_SERVICE_TOKEN: ci-only-token-that-is-at-least-32-characters
+      ENABLE_JOBS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13" }
+
+      - name: Create database roles
+        run: PGPASSWORD=erp_owner_dev_password psql -h localhost -U erp_owner -d school_erp -v ON_ERROR_STOP=1 -f infra/postgres/init/01-roles.sql
+
+      - run: pnpm install --frozen-lockfile
+      - name: Migrate, build, seed
+        working-directory: apps/api
+        run: |
+          pnpm db:migrate
+          pnpm build
+          pnpm db:seed
+      - name: API tests (tenant isolation, RBAC/ABAC, auth)
+        working-directory: apps/api
+        run: pnpm test
+      - name: Web typecheck and build
+        working-directory: apps/web
+        run: pnpm typecheck && pnpm build
+      - name: AI service tests
+        working-directory: services/ai
+        run: |
+          pip install -r requirements-dev.txt
+          pytest -q
